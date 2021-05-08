@@ -1,0 +1,78 @@
+﻿Lab Code
+Prof: Dr.Woo
+Author: Group 4 members
+5/01/2021
+
+
+
+
+
+
+1. ssh [username]@129.150.64.74
+2. $ hdfs dfs -put PubgData.csv
+3. $ hdfs dfs -mkdir test
+4. $ hdfs dfs -mkdir test2
+5. $ hdfs dfs -ls
+6. $ hdfs dfs -chmod -R o+w .
+7. $ beeline
+8. !connect jdbc:hive2://bigdai-nov-bdcsce-1:2181,bigdai-nov-bdcsce-2:2181,bigdai-nov-bdcsce-3:2181/;serviceDiscoveryMode=zooKeeper;zooKeeperNamespace=hiveserver2?tez.queue.name=interactive  bdcsce_admin
+9.      hive> use [user];
+10. hive> CREATE TABLE pubg (killed_by string, killer_name string, killer_placement int, killer_position_x double, killer_position_y double, location string, match_id string, time int, victim_name string, victim_placement int, victim_position_x double, victim_position_y double) row format delimited fields terminated by ',' stored as textfile location '/user/username' tblproperties ('skip.header.line.count'='1');
+11.      hive> CREATE TABLE killsbyweapon ROW FORMAT DELIMITED FIELDS TERMINATED BY ',' STORED AS TEXTFILE TBLPROPERTIES ('skip.header.line.count'='1') as select killed_by from pubg;
+
+
+12. hive> select * from killsbyweapon limit 10;
+
+
+13.      hive> select count(*) from killsbyweapon;
+
+
+14. CREATE TABLE killsbyweapon_clean ROW FORMAT DELIMITED FIELDS TERMINATED BY ',' STORED AS TEXTFILE TBLPROPERTIES ('skip.header.line.count'='1') as select killed_by from pubg where killed_by IS NOT NULL;
+
+
+15. Select count(*) from killsbyweapon_clean;
+
+
+16. hive> CREATE TABLE deathlocation ROW FORMAT DELIMITED FIELDS TERMINATED BY ',' STORED AS TEXTFILE LOCATION "/user/stran13/test2" TBLPROPERTIES ('skip.header.line.count'='1') as select victim_position_x, victim_position_y from pubg;
+
+
+17. hive> select * from deathlocation limit 10;
+
+
+18. INSERT OVERWRITE directory ‘/user/username/test’ select * from killsbyweapon;
+
+
+
+
+19. Open new gitbash terminal to export data
+20. ssh [username]@129.150.64.74
+21. Make sure hive tables are exported
+$ hdfs dfs -ls test 
+$ hdfs dfs -ls test2
+
+
+22. $ hdfs dfs -get /user/username/test/00000*_0
+23. ls -al
+
+
+$ cat 000000_0 000001_0 000002_0 > killedbyweapon.csv
+
+
+24. Remove the 00000*_0 files so we can export the next csv
+Rm 00000*_0 
+ls -al
+
+
+
+
+25. $ hdfs dfs -get /user/username/test2/00000*_0
+ls -al
+
+
+26. Merge the output files again
+$ cat 000000_0 000001_0 000002_0 000003_0 000004_0 000005_0 000006_0 000007_0 000008_0 > deathlocation.csv
+
+
+27. Open another gitbash terminal to download the csv files to your local device.
+28. $ scp username@129.150.64.74:/home/username/killedbyweapon.csv killedbyweapon.csv
+        $ scp username@129.150.64.74:/home/username/deathlocation.csv deathlocation.csv
